@@ -1,9 +1,7 @@
-services:
-  - type: web
-    name: ecocampus-ai
-    env: static
+sites:
+  - name: ecocampus-ai
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    publishDir: dist
     envVars:
       - key: API_KEY
         sync: false
