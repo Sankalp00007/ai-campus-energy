@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
     define: {
       // This ensures your existing code using process.env.API_KEY works in the browser
       'process.env.API_KEY': JSON.stringify(env.API_KEY)
+    },
+    preview: {
+      allowedHosts: true
     }
   }
 })
