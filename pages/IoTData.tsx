@@ -6,7 +6,7 @@ import { Power, Wifi, Thermometer, User, RefreshCw, Activity, Loader2 } from 'lu
 const IoTData = () => {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [loading, setLoading] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchSensors = async () => {
     try {

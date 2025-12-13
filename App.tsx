@@ -36,6 +36,15 @@ const MOCK_USERS = [
   { email: 'student@demo.com', password: 'password123', role: UserRole.STUDENT, name: 'Student' },
 ];
 
+const ProtectedRoute = ({ children, roles }: React.PropsWithChildren<{ roles: UserRole[] }>) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!roles.includes(user.role)) return <Navigate to="/" replace />;
+  return <Layout>{children}</Layout>;
+};
+
 // Main App Component
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -57,8 +66,6 @@ const App = () => {
         mapSessionToUser(session);
       } else {
         // Only clear user if we aren't in a mock session (mock sessions don't have supabase sessions)
-        // However, for simplicity, if supabase says sign out, we sign out. 
-        // We will handle mock persistance only in memory for this demo.
         if (!user || !user.id.startsWith('mock-')) {
             setUser(null);
         }
@@ -106,14 +113,6 @@ const App = () => {
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-  };
-
-  // Protected Route Wrapper
-  const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles: UserRole[] }) => {
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-    if (!user) return <Navigate to="/login" replace />;
-    if (!roles.includes(user.role)) return <Navigate to="/" replace />;
-    return <Layout>{children}</Layout>;
   };
 
   return (

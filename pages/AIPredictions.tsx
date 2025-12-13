@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { generateEnergyReport } from '../services/geminiService';
 import { api } from '../services/api';
-import { Sparkles, Loader2, FileText, AlertOctagon, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, FileText, AlertOctagon, RefreshCw, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const AIPredictions = () => {
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Check if API key is present (injected by Vite)
+  const isApiKeyConfigured = process.env.API_KEY && process.env.API_KEY.length > 0;
 
   const handleGenerateReport = async () => {
     setLoading(true);
@@ -37,6 +40,19 @@ const AIPredictions = () => {
         <p className="text-slate-600 mt-2">
             Leverage Google Gemini to analyze sensor data, forecast load, and identify wastage.
         </p>
+        
+        {/* API Key Status Indicator */}
+        <div className="mt-4 flex justify-center">
+            {isApiKeyConfigured ? (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Gemini API Connected
+                </span>
+            ) : (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                    <AlertOctagon className="w-3.5 h-3.5 mr-1.5" /> API Key Missing
+                </span>
+            )}
+        </div>
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
@@ -51,7 +67,8 @@ const AIPredictions = () => {
                 </p>
                 <button 
                     onClick={handleGenerateReport}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center mx-auto"
+                    disabled={!isApiKeyConfigured}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Sparkles size={20} className="mr-2" />
                     Analyze with Gemini AI

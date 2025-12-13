@@ -5,13 +5,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, (process as any).cwd(), '');
+  
+  // Use the environment variable if present, otherwise fallback to the provided key
+  const apiKey = env.API_KEY || "AIzaSyAnf_beUMPhiL2fYsuKOIzYQlW5tuVmPiw";
 
   return {
     plugins: [react()],
     define: {
       // This ensures your existing code using process.env.API_KEY works in the browser
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      'process.env.API_KEY': JSON.stringify(apiKey)
     },
     preview: {
       allowedHosts: true
