@@ -1,8 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { Building, Alert, Sensor } from '../types';
 
+// Fallback key provided by user
+const API_KEY_FALLBACK = "AIzaSyB_fk2wCgnOAvUbVMEU5H0AJLwKYVtKgEk";
+
 const getClient = () => {
-  const apiKey = process.env.API_KEY || ''; 
+  const apiKey = process.env.API_KEY || API_KEY_FALLBACK; 
   return new GoogleGenAI({ apiKey });
 };
 
@@ -11,9 +14,14 @@ export const generateEnergyReport = async (
   alerts: Alert[],
   sensors: Sensor[]
 ): Promise<string> => {
-  if (!process.env.API_KEY) {
+  const apiKey = process.env.API_KEY || API_KEY_FALLBACK;
+
+  if (!apiKey) {
     return "API Key is missing. Please set the API_KEY environment variable to use AI features.";
   }
+
+  // Debugging: Log partial key to ensure it's loaded correctly
+  console.log("Using API Key:", apiKey.substring(0, 8) + "...");
 
   const ai = getClient();
 
@@ -41,8 +49,17 @@ export const generateEnergyReport = async (
       contents: prompt,
     });
     return response.text || "No analysis could be generated.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
-    return "Failed to generate AI report. Please check your API key and try again.";
+    
+    let msg = "Failed to generate AI report.";
+    if (error.message) msg += ` Error: ${error.message}`;
+    
+    // Provide hints for common errors
+    if (msg.includes("404")) msg += " (Model 'gemini-2.5-flash' not found. Ensure your API key has access to this model).";
+    if (msg.includes("403") || msg.includes("permission")) msg += " (Permission denied. Check API key restrictions).";
+    if (msg.includes("429")) msg += " (Quota exceeded).";
+    
+    return msg;
   }
 };

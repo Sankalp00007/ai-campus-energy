@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { generateEnergyReport } from '../services/geminiService';
 import { api } from '../services/api';
-import { Sparkles, Loader2, FileText, AlertOctagon, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, FileText, AlertOctagon, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const AIPredictions = () => {
@@ -13,6 +13,7 @@ const AIPredictions = () => {
 
   const handleGenerateReport = async () => {
     setLoading(true);
+    setReport(null); // Clear previous report
     try {
         // Gather real DB data state to feed to the AI
         const [buildings, alerts, sensors] = await Promise.all([
@@ -30,6 +31,8 @@ const AIPredictions = () => {
         setLoading(false);
     }
   };
+
+  const isError = report?.includes("Failed") || report?.includes("Error");
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -55,9 +58,9 @@ const AIPredictions = () => {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center min-h-[300px] flex flex-col justify-center">
         {!report && !loading && (
-            <div className="py-12">
+            <div className="py-8">
                 <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText size={32} />
                 </div>
@@ -77,7 +80,7 @@ const AIPredictions = () => {
         )}
 
         {loading && (
-            <div className="py-20 flex flex-col items-center">
+            <div className="py-12 flex flex-col items-center">
                 <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
                 <p className="text-lg font-medium text-slate-700">Analyzing campus data patterns...</p>
                 <p className="text-sm text-slate-500 mt-2">Connecting to Gemini 2.5 Flash Model</p>
@@ -85,9 +88,11 @@ const AIPredictions = () => {
         )}
 
         {report && !loading && (
-            <div className="text-left animate-in fade-in duration-500">
+            <div className={`text-left animate-in fade-in duration-500 w-full ${isError ? 'bg-red-50 p-6 rounded-xl border border-red-200' : ''}`}>
                 <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                    <h2 className="text-xl font-bold text-slate-800">Generated Strategy Report</h2>
+                    <h2 className={`text-xl font-bold ${isError ? 'text-red-700 flex items-center' : 'text-slate-800'}`}>
+                        {isError ? <><AlertTriangle className="mr-2" /> Analysis Failed</> : 'Generated Strategy Report'}
+                    </h2>
                     <button 
                         onClick={handleGenerateReport}
                         className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center"
@@ -95,7 +100,7 @@ const AIPredictions = () => {
                         <RefreshCw size={14} className="mr-1" /> Regenerate
                     </button>
                 </div>
-                <div className="prose prose-slate max-w-none">
+                <div className={`prose max-w-none ${isError ? 'prose-red' : 'prose-slate'}`}>
                     <ReactMarkdown>{report}</ReactMarkdown>
                 </div>
             </div>
