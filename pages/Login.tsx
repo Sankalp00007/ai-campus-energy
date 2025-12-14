@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { UserRole } from '../types';
-import { Mail, Leaf, Lock, Loader2, AlertCircle, Shield, BookOpen, Briefcase } from 'lucide-react';
+import { Mail, Leaf, Lock, Loader2, AlertCircle, Shield, BookOpen, Briefcase, Copy } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 
 const DEMO_USERS = [
@@ -63,66 +63,6 @@ const Login = () => {
       setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (u: typeof DEMO_USERS[0]) => {
-    setEmail(u.email);
-    setPassword(u.password);
-    setRole(u.role);
-    setLoading(true);
-    setError(null);
-    setInfo('Attempting to access demo account...');
-    
-    try {
-        // 1. Try to login
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-            email: u.email,
-            password: u.password
-        });
-
-        if (!loginError) {
-            // Success - Auth state listener in App.tsx will handle redirect
-            return;
-        }
-
-        // 2. If login failed (likely user doesn't exist), try to Register
-        if (loginError.message.includes('Invalid login credentials')) {
-            setInfo('Demo account not found. Creating it now...');
-            
-            const { error: signUpError } = await supabase.auth.signUp({
-                email: u.email,
-                password: u.password,
-                options: {
-                    data: { role: u.role, name: u.label }
-                }
-            });
-
-            if (signUpError) throw signUpError;
-
-            // 3. Try login again after signup (works if email confirm is off)
-            const { error: retryLoginError } = await supabase.auth.signInWithPassword({
-                email: u.email,
-                password: u.password
-            });
-
-            if (retryLoginError) {
-                 if (retryLoginError.message.includes('Email not confirmed')) {
-                     setInfo('Account created. Please verify the email sent to ' + u.email);
-                     setLoading(false);
-                 } else {
-                     throw retryLoginError;
-                 }
-            }
-        } else {
-            throw loginError;
-        }
-
-    } catch (err: any) {
-        console.error("Demo Login Failed:", err);
-        setError("Could not access demo account. Please sign up manually.");
-        setLoading(false);
-        setInfo(null);
     }
   };
 
@@ -233,27 +173,33 @@ const Login = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase tracking-wider">
                 <span className="px-2 bg-white text-slate-400 font-semibold">
-                  Quick Login (Auto-Creates Account)
+                  Demo Credentials
                 </span>
               </div>
             </div>
             
-            <p className="text-xs text-center text-slate-500 mb-3">Click to automatically sign up & login.</p>
+            <p className="text-xs text-center text-slate-500 mb-3">Use these details to sign in manually.</p>
             
-            <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-2">
               {DEMO_USERS.map((u) => (
-                <button
+                <div
                   key={u.label}
-                  type="button"
-                  disabled={loading}
-                  onClick={() => handleDemoLogin(u)}
-                  className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50"
                 >
-                  <div className={`p-2 rounded-full mb-2 ${u.color} group-hover:scale-110 transition-transform`}>
-                    <u.icon size={18} />
+                  <div className="flex items-center overflow-hidden">
+                    <div className={`p-2 rounded-full mr-3 flex-shrink-0 ${u.color}`}>
+                        <u.icon size={16} />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800">{u.label}</p>
+                        <p className="text-xs text-slate-500 truncate select-all font-mono">{u.email}</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-700">{u.label}</span>
-                </button>
+                  <div className="text-right pl-2 flex-shrink-0">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wide">Password</p>
+                    <p className="text-xs font-mono text-slate-600 select-all font-medium">{u.password}</p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>

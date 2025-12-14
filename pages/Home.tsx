@@ -106,7 +106,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 text-center border-t border-slate-800">
-        <p>© 2024 EcoCampus AI. Built for the Future.</p>
+        <p>© 2025 EcoCampus AI. Built for the Future.</p>
       </footer>
     </div>
   );
