@@ -18,10 +18,12 @@ app.use(express.static(path.join(__dirname, 'dist')));
 // Secure API Proxy for Gemini
 app.post('/api/analyze', async (req, res) => {
   // Retrieve key from server-side environment variables
+  // Support both standard API_KEY and Vite-prefixed VITE_API_KEY
   const apiKey = process.env.API_KEY || process.env.VITE_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Server Configuration Error: API Key not found.' });
+    console.error("Gemini API Error: API_KEY environment variable is missing.");
+    return res.status(500).json({ error: 'Server Configuration Error: API Key not found. Please set API_KEY in Render Environment Variables.' });
   }
 
   try {
@@ -49,5 +51,12 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
+  const apiKey = process.env.API_KEY || process.env.VITE_API_KEY;
+  const status = apiKey ? `Present (starts with ${apiKey.substring(0, 4)}...)` : 'MISSING';
+  
   console.log(`Server running on port ${PORT}`);
+  console.log(`API Key Status: ${status}`);
+  if (!apiKey) {
+    console.warn("WARNING: API_KEY is not set. The /api/analyze endpoint will fail.");
+  }
 });
